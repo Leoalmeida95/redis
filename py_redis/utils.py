@@ -12,7 +12,7 @@ def gera_id():
             identificador = conn.incr('chave')
             return identificador
         else:
-            conn.set('chave',1)
+            conn.set('chave', 1)
             return 1
     except redis.exceptions.ConnectionError as e:
         print(f'Não foi possível gerar o identificador: {e}')
