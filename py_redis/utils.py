@@ -80,9 +80,11 @@ def atualizar():
     print('Atualizando produto...')
     print('....................')
 
-    identificador = input('Informe o identificador do produto:')
+    num_id = input('Informe o número do identificador do produto:')
 
-    existe = conn.hkeys(f'{key}{identificador}')
+    identificador = f'{key}{num_id}'
+
+    existe = conn.hkeys(identificador)
 
     if existe:
         nome = input('Informe o nome do produto:')
@@ -125,6 +127,7 @@ def menu():
     print('2 - Inserir produto')
     print('3 - Atualizar produto')
     print('4 - Apagar produto')
+    print('\n')
     opcao = int(input())
     
     if opcao in range(1,4):
