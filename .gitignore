@@ -107,3 +107,9 @@ dist
 # py
 *.pyc
 __pycache__
+
+#java
+target
+.classpath
+.project
+*.prefs
