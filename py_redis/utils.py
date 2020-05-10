@@ -1,4 +1,5 @@
 import redis
+import sys
 
 key = 'produtos:'
 
@@ -30,16 +31,18 @@ def listar():
 
     try:
         dados = conn.keys(pattern=f'{key}*')
+        utf8 = 'utf-8'
+        ignore = 'ignore'
 
         if len(dados) > 0:
             print('Listando produtos...')
             print('....................')
             for identificador in dados:
                 produto = conn.hgetall(identificador)
-                print(f"Id: {str(identificador, 'utf-8', 'ignore')}")
-                print(f"Produto: {str(produto[b'nome'], 'utf-8', 'ignore')}")
-                print(f"Preço: {str(produto[b'preco'], 'utf-8', 'ignore')}")
-                print(f"Estoque: {str(produto[b'estoque'], 'utf-8', 'ignore')}")
+                print(f"Id: {str(identificador, utf8, ignore)}")
+                print(f"Produto: {str(produto[b'nome'], utf8, ignore)}")
+                print(f"Preço: {str(produto[b'preco'], utf8, ignore)}")
+                print(f"Estoque: {str(produto[b'estoque'], utf8, ignore)}")
                 print('....................')
         else:
             print('Não foram encontrados produtos')
@@ -77,7 +80,7 @@ def inserir():
 def atualizar():
     conn = conectar()
 
-    print('Atualizando produto...')
+    print('Atualizando um produto...')
     print('....................')
 
     num_id = input('Informe o número do identificador do produto:')
@@ -108,29 +111,43 @@ def atualizar():
 
 def deletar():
     conn = conectar()
-    identificador = input('Informe o identificador do produto:')
 
-    try:
-        res = conn.delete(identificador)
-        if res == 1:
-            print(f'O produto foi deletado com sucesso!')
-        else:
-            print('Não foi possível deletar o produto.')
-    except redis.exceptions.ConnectionError as e:
-        print(f'Não foi possível deletar o produto. {e}')
+    print('Deltando um produto...')
+    print('....................')
+
+    num_id = input('Informe o número do identificador do produto:')
+
+    identificador = f'{key}{num_id}'
+
+    existe = conn.hkeys(identificador)
+
+    if existe:
+        try:
+            res = conn.delete(identificador)
+            if res == 1:
+                print(f'O produto foi deletado com sucesso!')
+            else:
+                print('Não foi possível deletar o produto.')
+        except redis.exceptions.ConnectionError as e:
+            print(f'Não foi possível deletar o produto. {e}')
+    else:
+        print(f'Não há nenhum produto cadastrado com o identificador {identificador}.')
     desconectar(conn)
 
 def menu():
+    print('\n')
     print('======================Gerenciamento dos Produtos======================')
     print('Selecione uma opção:')
     print('1 - Listar produtos')
     print('2 - Inserir produto')
     print('3 - Atualizar produto')
     print('4 - Apagar produto')
+    print('5 - Sair')
     print('\n')
+
     opcao = int(input())
     
-    if opcao in range(1,4):
+    if opcao in [1,2,3,4,5]:
         if opcao == 1:
             listar()
         elif opcao == 2:
@@ -139,5 +156,9 @@ def menu():
             atualizar()
         elif opcao == 4:
             deletar()
-        else:
-            print('Digite uma opcao válida.')
+        elif opcao == 5:
+            sys.exit('================================ Fim ==============================')
+    else:
+        print('Digite uma opcao válida.')
+
+    menu()
