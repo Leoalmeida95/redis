@@ -64,7 +64,7 @@ def inserir():
     try:
         res = conn.hmset(identificador, produto)
         if res:
-            print('O produto {nome} foi inserido com sucesso!')
+            print(f'O produto {nome} foi inserido com sucesso!')
         else:
             print('Não foi possível inserir o produto.')
     except redis.exceptions.ConnectionError as e:
@@ -103,3 +103,38 @@ def atualizar():
         print(f'Não há nenhum produto cadastrado com o identificador {identificador}.')
     
     desconectar(conn)
+
+def deletar():
+    conn = conectar()
+    identificador = input('Informe o identificador do produto:')
+
+    try:
+        res = conn.delete(identificador)
+        if res == 1:
+            print(f'O produto foi deletado com sucesso!')
+        else:
+            print('Não foi possível deletar o produto.')
+    except redis.exceptions.ConnectionError as e:
+        print(f'Não foi possível deletar o produto. {e}')
+    desconectar(conn)
+
+def menu():
+    print('======================Gerenciamento dos Produtos======================')
+    print('Selecione uma opção:')
+    print('1 - Listar produtos')
+    print('2 - Inserir produto')
+    print('3 - Atualizar produto')
+    print('4 - Apagar produto')
+    opcao = int(input())
+    
+    if opcao in range(1,4):
+        if opcao == 1:
+            listar()
+        elif opcao == 2:
+            inserir()
+        elif opcao == 3:
+            atualizar()
+        elif opcao == 4:
+            deletar()
+        else:
+            print('Digite uma opcao válida.')

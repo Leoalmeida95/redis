@@ -1,6 +1,5 @@
-from utils import conectar, listar, inserir, atualizar
+from utils import menu
 
 if __name__ == '__main__':
-    #inserir()
-    #atualizar()
-    listar()
+    menu()
+
