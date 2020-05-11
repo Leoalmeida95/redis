@@ -12,7 +12,18 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class App {
 
-    private static String key = "produtos:*";
+    private static String key = "produtos:";
+
+    protected static Jedis conectar() {
+        Jedis conn = new Jedis("localhost");
+
+        return conn;
+    }
+
+    protected static void desconectar(Jedis conn) {
+
+        conn.disconnect();
+    }
 
     protected static String gerarChave() {
 
@@ -34,18 +45,9 @@ public class App {
             System.out.println("Verifique se o servidor Redis está ativo");
         }
 
+        desconectar(conn);
+        
         return initial;
-    }
-
-    protected static Jedis conectar() {
-        Jedis conn = new Jedis("localhost");
-
-        return conn;
-    }
-
-    protected static void desconectar(Jedis conn) {
-
-        conn.disconnect();
     }
 
     protected static void listar() {
@@ -110,6 +112,47 @@ public class App {
         desconectar(conn);
     }
 
+    protected static void alterar(Scanner teclado) {
+        Jedis conn = conectar();
+
+        try {
+
+            System.out.println("Alterando produto...");
+            System.out.println("-----------------------");
+
+            Map<String, String> produto = new HashMap<String, String>();
+            System.out.println("Chave:");
+            String identificador = teclado.nextLine();
+
+            Set<String> existe = conn.hkeys(key+identificador);
+
+            if(!existe.isEmpty()){   
+                produto.put("Id",key+identificador);
+                System.out.println("Produto:");
+                produto.put("nome", teclado.nextLine());
+                System.out.println("Preço:");
+                produto.put("preco", teclado.nextLine());
+                System.out.println("Estoque:");
+                produto.put("estoque", teclado.nextLine());
+                String result = conn.hmset(key, produto);
+    
+                if (result != null)
+                    System.out.println("Produto alterado com sucesso!");
+                else
+                    System.out.println("Não foi possível alterar o produto");
+    
+                System.out.println("-----------------------");
+            }
+            else
+                System.out.println("Não há produto registrado com essa chave.");
+
+        } catch (JedisConnectionException e) {
+            System.out.println("Verifique se o servidor Redis está ativo");
+        }
+
+        desconectar(conn);
+    }
+
     protected static void menu(){
         Scanner teclado = new Scanner(System.in);
 
@@ -117,6 +160,7 @@ public class App {
         System.out.println("Selecione uma opção");
         System.out.println("1 - Listar os Produtos");
         System.out.println("2 - Inserir novo Produto");
+        System.out.println("3 - Alterar Produto");
         System.out.println("5 - Sair");
 
         int opcao = Integer.parseInt(teclado.nextLine());
@@ -125,6 +169,8 @@ public class App {
             listar();
         else if(opcao == 2)
             inserir(teclado);
+        else if(opcao == 3)
+            alterar(teclado);
         else if(opcao == 5){
             System.out.println("================================Fim=================================");
             System.exit(0);
