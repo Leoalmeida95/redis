@@ -1,11 +1,9 @@
 package redis;
 
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
-import static java.nio.charset.StandardCharsets.*;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -36,7 +34,7 @@ public class App {
 
             if (identificador != null){
                 //converter string de bytes to UTF8
-                return UTF_8.encode(conn.incr(identity).toString()).toString();
+                return conn.incr(identity).toString();
             }
 
             conn.set(identity, initial);
@@ -54,7 +52,7 @@ public class App {
         Jedis conn = conectar();
 
         try {
-            Set<String> res = conn.keys(key);
+            Set<String> res = conn.keys(key+"*");
 
             if (res.size() > 0) {
                 System.out.println("Listando os produtos...");
@@ -68,6 +66,8 @@ public class App {
                     System.out.println("Estoque: " + produto.get("estoque"));
                     System.out.println("-----------------------");
                 }
+
+                System.out.println("Total de produtos cadastrados: " + res.size()) ;
 
             } else {
                 System.out.println("Não existem produtos cadastrados.");
@@ -88,7 +88,8 @@ public class App {
             System.out.println("-----------------------");
 
             Map<String, String> produto = new HashMap<String, String>();
-            produto.put("Id", key + gerarChave());
+            String chaveCompleta = key + gerarChave();
+            produto.put("Id", chaveCompleta);
             System.out.println("Produto:");
             produto.put("nome", teclado.nextLine());
             System.out.println("Preço:");
@@ -96,7 +97,7 @@ public class App {
             System.out.println("Estoque:");
             produto.put("estoque", teclado.nextLine());
 
-            String result = conn.hmset(key, produto);
+            String result = conn.hmset(chaveCompleta, produto);
 
             if (result != null)
                 System.out.println("Novo produto criado com sucesso!");
@@ -124,17 +125,18 @@ public class App {
             System.out.println("Chave:");
             String identificador = teclado.nextLine();
 
-            Set<String> existe = conn.hkeys(key+identificador);
+            String chaveCompleta = key+identificador;
+            Boolean existe = conn.hkeys(chaveCompleta).isEmpty();
 
-            if(!existe.isEmpty()){   
-                produto.put("Id",key+identificador);
+            if(!existe){   
+                produto.put("Id", chaveCompleta);
                 System.out.println("Produto:");
                 produto.put("nome", teclado.nextLine());
                 System.out.println("Preço:");
                 produto.put("preco", teclado.nextLine());
                 System.out.println("Estoque:");
                 produto.put("estoque", teclado.nextLine());
-                String result = conn.hmset(key, produto);
+                String result = conn.hmset(chaveCompleta, produto);
     
                 if (result != null)
                     System.out.println("Produto alterado com sucesso!");
