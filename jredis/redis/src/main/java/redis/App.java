@@ -32,8 +32,8 @@ public class App {
         try {
             String identificador = conn.get(identity);
 
-            if (identificador != null){
-                //converter string de bytes to UTF8
+            if (identificador != null) {
+                // converter string de bytes to UTF8
                 return conn.incr(identity).toString();
             }
 
@@ -44,7 +44,7 @@ public class App {
         }
 
         desconectar(conn);
-        
+
         return initial;
     }
 
@@ -52,7 +52,7 @@ public class App {
         Jedis conn = conectar();
 
         try {
-            Set<String> res = conn.keys(key+"*");
+            Set<String> res = conn.keys(key + "*");
 
             if (res.size() > 0) {
                 System.out.println("Listando os produtos...");
@@ -67,7 +67,7 @@ public class App {
                     System.out.println("-----------------------");
                 }
 
-                System.out.println("Total de produtos cadastrados: " + res.size()) ;
+                System.out.println("Total de produtos cadastrados: " + res.size());
 
             } else {
                 System.out.println("Não existem produtos cadastrados.");
@@ -90,11 +90,11 @@ public class App {
             Map<String, String> produto = new HashMap<String, String>();
             String chaveCompleta = key + gerarChave();
             produto.put("Id", chaveCompleta);
-            System.out.println("Produto:");
+            System.out.print("Produto:");
             produto.put("nome", teclado.nextLine());
-            System.out.println("Preço:");
+            System.out.print("Preço:");
             produto.put("preco", teclado.nextLine());
-            System.out.println("Estoque:");
+            System.out.print("Estoque:");
             produto.put("estoque", teclado.nextLine());
 
             String result = conn.hmset(chaveCompleta, produto);
@@ -122,30 +122,29 @@ public class App {
             System.out.println("-----------------------");
 
             Map<String, String> produto = new HashMap<String, String>();
-            System.out.println("Chave:");
+            System.out.print("Chave:");
             String identificador = teclado.nextLine();
 
-            String chaveCompleta = key+identificador;
+            String chaveCompleta = key + identificador;
             Boolean existe = conn.hkeys(chaveCompleta).isEmpty();
 
-            if(!existe){   
+            if (!existe) {
                 produto.put("Id", chaveCompleta);
-                System.out.println("Produto:");
+                System.out.print("Produto:");
                 produto.put("nome", teclado.nextLine());
-                System.out.println("Preço:");
+                System.out.print("Preço:");
                 produto.put("preco", teclado.nextLine());
-                System.out.println("Estoque:");
+                System.out.print("Estoque:");
                 produto.put("estoque", teclado.nextLine());
                 String result = conn.hmset(chaveCompleta, produto);
-    
+
                 if (result != null)
                     System.out.println("Produto alterado com sucesso!");
                 else
                     System.out.println("Não foi possível alterar o produto");
-    
+
                 System.out.println("-----------------------");
-            }
-            else
+            } else
                 System.out.println("Não há produto registrado com essa chave.");
 
         } catch (JedisConnectionException e) {
@@ -155,32 +154,61 @@ public class App {
         desconectar(conn);
     }
 
-    protected static void menu(){
+    protected static void deletar(Scanner teclado) {
+        Jedis conn = conectar();
+
+        try {
+            System.out.println("Deletando produto...");
+            System.out.println("-----------------------");
+            System.out.print("Chave:");
+            String identificador = teclado.nextLine();
+            String chaveCompleta = key + identificador;
+            Boolean existe = !conn.hkeys(chaveCompleta).isEmpty();
+            if (existe) {
+                Long result = conn.del(chaveCompleta);
+                if (result == 1)
+                    System.out.println("Produto removido com sucesso!");
+                else
+                    System.out.println("O Produto não pode ser removido.");
+
+            } else
+                System.out.println("Não há produto registrado com essa chave.");
+        } catch (JedisConnectionException e) {
+            System.out.println("Verifique se o servidor Redis está ativo");
+        }
+
+        desconectar(conn);
+    }
+
+    protected static void menu() {
         Scanner teclado = new Scanner(System.in);
 
-        System.out.println("======================Gerenciamento dos Produtos======================");
+        System.out.println("\n======================Gerenciamento dos Produtos======================");
         System.out.println("Selecione uma opção");
         System.out.println("1 - Listar os Produtos");
         System.out.println("2 - Inserir novo Produto");
         System.out.println("3 - Alterar Produto");
+        System.out.println("4 - Deletar Produto");
         System.out.println("5 - Sair");
 
+        System.out.print("\nOpção:");
         int opcao = Integer.parseInt(teclado.nextLine());
 
-        if (opcao == 1) 
+        if (opcao == 1)
             listar();
-        else if(opcao == 2)
+        else if (opcao == 2)
             inserir(teclado);
-        else if(opcao == 3)
+        else if (opcao == 3)
             alterar(teclado);
-        else if(opcao == 5){
+        else if (opcao == 4)
+            deletar(teclado);
+        else if (opcao == 5) {
             System.out.println("================================Fim=================================");
             System.exit(0);
-        }
-         else 
+        } else
             System.out.println("Escolha uma opção válida.");
-        
-            menu();
+
+        menu();
     }
 
     public static void main(String[] args) {
